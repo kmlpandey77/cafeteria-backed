@@ -23,56 +23,39 @@ class ItemResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('org_id')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('category_id')
-                    ->numeric(),
-                Forms\Components\TextInput::make('title')
-                    ->required(),
-                Forms\Components\TextInput::make('price')
-                    ->required()
-                    ->numeric()
-                    ->prefix('$'),
-                Forms\Components\TextInput::make('order_by')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
+                Forms\Components\Section::make()->schema([
+                    Forms\Components\Select::make('category_id')
+                        ->relationship('category', 'title'),
+                    Forms\Components\TextInput::make('title')
+                        ->required(),
+                    Forms\Components\TextInput::make('price')
+                        ->required()
+                        ->numeric()
+                        ->prefix('NRP'),
+                ])
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->query(Item::orderBy('order_by'))
             ->columns([
-                Tables\Columns\TextColumn::make('org_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('category_id')
-                    ->numeric()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('category.title'),
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('price')
-                    ->money()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('order_by')
-                    ->numeric()
-                    ->sortable(),
+                    ->money(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->reorderable('order_by')
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
